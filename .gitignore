@@ -1,3 +1,10 @@
 node_modules
 dist
 .DS_Store
+# Firebase local cache
+.firebase/
+
+# Local AI tooling
+.agents/
+.claude/
+skills-lock.json
