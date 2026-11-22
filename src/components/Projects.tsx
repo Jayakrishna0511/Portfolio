@@ -70,17 +70,19 @@ function computeGridCells(count: number, width: number, height: number, fov: num
   let cellW = Math.min((viewW * 0.97 - gap * (cols - 1)) / cols, ((availH - gap * (rows - 1)) / rows) * cardAspect);
   cellW = Math.max(cellW, 0.5);
   const cellH = cellW / cardAspect;
-  const totalGridW = cols * cellW + (cols - 1) * gap;
   const totalGridH = rows * cellH + (rows - 1) * gap;
   const startY = viewH / 2 - topReserved - (availH - totalGridH) / 2;
 
   const cells = Array.from({ length: count }, (_, idx) => {
     const c = idx % cols;
     const r = Math.floor(idx / cols);
+    // A shorter last row (e.g. 5 cards = 3 + 2) is centred instead of hugging the left edge.
+    const inRow = Math.min(cols, count - r * cols);
+    const rowW = inRow * cellW + (inRow - 1) * gap;
     return {
-      x: -totalGridW / 2 + cellW / 2 + c * (cellW + gap),
+      x: -rowW / 2 + cellW / 2 + c * (cellW + gap),
       y: startY - cellH / 2 - r * (cellH + gap),
-      side: cols > 1 && c === 0 ? -1 : cols > 1 && c === cols - 1 ? 1 : 0,
+      side: inRow > 1 && c === 0 ? -1 : inRow > 1 && c === inRow - 1 ? 1 : 0,
       vert: r === 0 ? 1 : r === rows - 1 ? -1 : 0,
     };
   });
@@ -771,16 +773,16 @@ export const Projects: React.FC<ProjectsProps> = ({ onSelectProject }) => {
   return fallbackMode ? (
     <section id="projects" ref={containerRef} className="relative w-full text-gray-100 py-28 px-4 md:px-10 border-t border-white/5">
       {headerContent}
-      <div className="max-w-7xl mx-auto mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="max-w-7xl mx-auto mt-14 flex flex-wrap justify-center gap-6">
         {PORTFOLIO_PROJECTS.map((proj) => (
           <button
             key={proj.id}
             data-project-fallback
             onClick={() => onSelectProject(proj)}
-            className="glass glass-panel-card h-auto p-0 block whitespace-normal rounded-2xl overflow-hidden text-left group hover:scale-[1.02] transition-transform duration-300"
+            className="glass glass-panel-card h-auto p-0 flex flex-col w-full sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] whitespace-normal rounded-2xl overflow-hidden text-left group hover:scale-[1.02] transition-transform duration-300"
           >
             <ProjectVideoFallback project={proj} />
-            <div className="p-5">
+            <div className="p-5 flex-1">
               <span className="text-xs uppercase tracking-[0.2em] text-red-400 font-bold">
                 {proj.category}
               </span>

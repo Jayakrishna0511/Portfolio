@@ -9,13 +9,15 @@ export type Pt = [number, number];
 
 /* ── shared crack vertices ── */
 const V_TOP_A: Pt = [0.22, 0];
-const V_TOP_B: Pt = [0.515, 0];
-const V_TOP_C: Pt = [0.84, 0];
+const V_TOP_B: Pt = [0.42, 0];
+const V_TOP_C: Pt = [0.63, 0];
 const V_BOT_A: Pt = [0.34, 1];
 const V_BOT_B: Pt = [0.865, 1];
 const V_MID_A: Pt = [0.385, 0.72];
 const V_MID_B: Pt = [0.48, 0.62];
-const V_MID_C: Pt = [0.716, 0.49]; // the "centre" of the crack star
+// the "centre" of the crack star – kept low-left on the jacket edge so the face (≈ x 0.64–0.84)
+// sits inside one unbroken shard with no cracks or gaps across it
+const V_MID_C: Pt = [0.6, 0.76];
 
 /** The five shards that tile the plate. */
 export const SHARD_POLYGONS: Pt[][] = [
@@ -60,10 +62,11 @@ export const clampOffset = (v: number, size: number) => {
 
 /** Where the glass plate sits inside the hero section (CSS px). */
 export function plateLayout(w: number, h: number) {
-  const mobile = w < 768;
+  // stacked layout (photo on top, copy below) on phones and on portrait tablets
+  const mobile = w < 768 || (w < 1024 && h >= w);
   const left = mobile ? Math.min(Math.max(w * 0.05, 16), 22) : w * 0.055;
   const top = Math.max(h * 0.085, mobile ? 84 : 96);
-  const height = mobile ? h * 0.5 : h - top - h * 0.085;
+  const height = mobile ? h * 0.44 : h - top - h * 0.085;
   return { left, top, width: w - left * 2, height, mobile };
 }
 

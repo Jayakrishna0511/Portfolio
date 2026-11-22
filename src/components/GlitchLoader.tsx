@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import { LOADER, ABOUT, HERO } from '../data/portfolioData';
+import { LOADER, ABOUT, HERO, PORTFOLIO_PROJECTS } from '../data/portfolioData';
 
 interface GlitchLoaderProps {
   onComplete: () => void;
@@ -9,16 +9,19 @@ interface GlitchLoaderProps {
 const STATEMENT = LOADER.statement;
 const WORDS = STATEMENT.split(' ');
 const RED_WORDS = new Set(LOADER.redWords);
+// everything visible on first scroll is fetched during the intro, so pictures appear instantly
 const PRELOAD_ASSETS = [
-  ABOUT.portrait,
   HERO.image,
+  ABOUT.portraitDots,
+  ABOUT.portrait,
+  ...PORTFOLIO_PROJECTS.map((p) => p.poster).filter((x): x is string => !!x),
 ];
-const TIMEOUT_MS = 7000;
-const REVEAL_DELAY_MS = 500;
+const TIMEOUT_MS = 3000;
+const REVEAL_DELAY_MS = 250;
 const DIGITS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 function trackPreload(onProgress: (ratio: number) => void) {
-  const total = PRELOAD_ASSETS.length + 3;
+  const total = PRELOAD_ASSETS.length + 2;
   let loaded = 0;
   let cancelled = false;
 
@@ -43,17 +46,8 @@ function trackPreload(onProgress: (ratio: number) => void) {
     window.addEventListener('load', tick, { once: true });
   }
 
-  let sceneChecks = 0;
-  const checkScene = () => {
-    if (cancelled) return;
-    if (document.querySelector('[data-scene-ready]') || sceneChecks > 60) {
-      tick();
-    } else {
-      sceneChecks += 1;
-      window.setTimeout(checkScene, 100);
-    }
-  };
-  checkScene();
+  // (no longer waits for the projects 3D scene: it only renders once scrolled into view,
+  //  so waiting for it always ran the loader into its timeout)
 
   return () => {
     cancelled = true;
@@ -87,13 +81,15 @@ export const GlitchLoader: React.FC<GlitchLoaderProps> = ({ onComplete }) => {
     let lastTime = performance.now();
 
     const loop = (now: number) => {
-      const dt = Math.min(64, now - lastTime);
+      // time-based (not frame-based) so a slow frame rate on weak devices can't stretch the loader
+      const dt = Math.max(0, now - lastTime);
       lastTime = now;
 
       const targetVal = targetRef.current * 100;
+      const gap = targetVal - currentRef.current;
       const nextVal = Math.min(
         targetVal,
-        currentRef.current + Math.max(0.15, (targetVal - currentRef.current) * 0.006 * dt)
+        currentRef.current + Math.max(0.12 * dt, gap * (1 - Math.exp(-0.008 * dt)))
       );
       currentRef.current = nextVal;
       setPercent(Math.floor(nextVal));

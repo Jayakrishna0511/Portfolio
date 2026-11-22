@@ -34,6 +34,7 @@ export const Footer: React.FC = () => {
         <div className="flex flex-col items-center md:items-end gap-3">
           <div className="flex flex-wrap items-center justify-center gap-5 text-xs text-gray-400 uppercase tracking-widest font-bold">
             <a href="#about" className="hover:text-red-500 transition-colors">About</a>
+            <a href="#experience" className="hover:text-red-500 transition-colors">Experience</a>
             <a href="#skills" className="hover:text-red-500 transition-colors">Skills</a>
             <a href="#projects" className="hover:text-red-500 transition-colors">Projects</a>
             <a href="#services" className="hover:text-red-500 transition-colors">Services</a>

@@ -1099,7 +1099,7 @@ void main() {
     gl.uniform1f(u2.uTime, t2);
     gl.uniform4f(u2.uLabelBox, lb[0], lb[1], lb[2], lb[3]);
     gl.uniform2f(u2.uLabelTx, 2.5 / LABEL_W, 2.5 / LABEL_H);
-    gl.uniform1f(u2.uLabelAmt, labelAmt);
+    gl.uniform1f(u2.uLabelAmt, opts.hideLabel ? 0 : labelAmt);
     gl.uniform1f(u2.uLabelLod, Math.max(0, Math.log2(LABEL_W / (2 * lb[2] * DPR)) - 0.6));
     gl.uniform1f(u2.uZMax, zTop);
     gl.uniform1f(u2.uLift, btn.lift);

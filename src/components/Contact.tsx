@@ -32,16 +32,50 @@ export const Contact: React.FC = () => {
     return () => ctx.revert();
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [sending, setSending] = useState(false);
+  const [sentVia, setSentVia] = useState<'form' | 'gmail'>('form');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (sending) return;
+    setSending(true);
+    const subject = `Project Inquiry from ${formData.name}`;
+    const body = `Name: ${formData.name}
+Email: ${formData.email}
+
+Message:
+${formData.message}`;
+    try {
+      // Delivers straight to SITE.email (no backend needed). The very first submission sends
+      // an activation email to SITE.email – click "Activate" once and every later message arrives.
+      const res = await fetch(`https://formsubmit.co/ajax/${SITE.email}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          message: formData.message,
+          _subject: subject,
+          _replyto: formData.email,
+          _template: 'table',
+          _captcha: 'false',
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || String(data.success) === 'false') throw new Error(data.message || 'send failed');
+      setSentVia('form');
+    } catch {
+      // Fallback: open a pre-filled Gmail compose window (works without a desktop mail app)
+      const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(SITE.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.open(gmail, '_blank', 'noopener');
+      setSentVia('gmail');
+    }
+    setSending(false);
     setSubmitted(true);
-    // Open user's mail client with the message pre-filled
-    const mailto = `mailto:${SITE.email}?subject=${encodeURIComponent(`Project Inquiry from ${formData.name}`)}&body=${encodeURIComponent(`Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`)}`;
-    window.location.href = mailto;
     setTimeout(() => {
       setSubmitted(false);
       setFormData({ name: '', email: '', message: '' });
-    }, 5000);
+    }, 6000);
   };
 
   return (
@@ -110,7 +144,9 @@ export const Contact: React.FC = () => {
               Message Dispatched!
             </h3>
             <p className="text-lg text-gray-300 font-medium max-w-md">
-              Thanks for reaching out! Your email app has been opened with the project details pre-filled.
+              {sentVia === 'form'
+                ? "Thanks for reaching out! Your message has landed in my inbox – I'll get back to you soon."
+                : 'Gmail has opened in a new tab with your message pre-filled – just hit Send.'}
             </p>
           </div>
         ) : (
@@ -123,7 +159,7 @@ export const Contact: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-[10px] uppercase font-mono tracking-wider text-gray-400 block">Direct Inquiries</span>
-                  <a href={`mailto:${SITE.email}`} className="text-sm md:text-base font-bold text-white hover:text-red-400 transition-colors">
+                  <a href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(SITE.email)}`} target="_blank" rel="noopener noreferrer" className="text-sm md:text-base font-bold text-white hover:text-red-400 transition-colors break-all">
                     {SITE.email}
                   </a>
                 </div>
@@ -179,7 +215,7 @@ export const Contact: React.FC = () => {
             </div>
 
             <VenomButton type="submit" variant="primary" className="self-center mt-2">
-              Send Message
+              {sending ? 'Sending…' : 'Send Message'}
             </VenomButton>
           </form>
         )}

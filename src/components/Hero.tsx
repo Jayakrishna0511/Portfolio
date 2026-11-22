@@ -21,7 +21,7 @@ import {
 const IMG_HERO_RED = HERO.image;
 
 /** Horizontal position (0..1) of the subject inside the 16:9 hero image. */
-const SUBJECT_X = 0.69;
+const SUBJECT_X = 0.74;
 
 /* ───────────────────────── Reveal-on-scroll for the hero copy ───────────────────────── */
 function useRevealOnScroll(rootRef: React.RefObject<HTMLElement>, selector: string) {
@@ -113,7 +113,7 @@ export const Hero: React.FC = () => {
   useEffect(() => setWebgl(hasWebGL()), []);
 
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)');
+    const mq = window.matchMedia('(max-width: 767px), (max-width: 1023px) and (orientation: portrait)');
     const update = () => setMobile(mq.matches);
     update();
     mq.addEventListener('change', update);
@@ -242,11 +242,15 @@ export const Hero: React.FC = () => {
             px += Math.sin(t * 0.5 + b * 2.1) * 0.006;
             py += Math.cos(t * 0.4 + b * 1.3) * 0.006;
           }
-          if (isMobile) [px, py] = [py, px]; // portrait plate on phones
+          if (isMobile) {
+            [px, py] = [py, px]; // portrait plate on phones
+            // squeeze the cracks into the lower part so none cross the face (top ~60% of the plate)
+            py = Math.min(1, Math.max(0, 1 - Math.pow(1 - py, 2.6)));
+          }
           return [(px - 0.5) * plateW, (0.5 - py) * plateH];
         });
 
-        const shape = roundedShape(insetPolygon(world, minSide * 0.012), minSide * 0.035);
+        const shape = roundedShape(insetPolygon(world, minSide * 0.009), minSide * 0.035);
         const depth = minSide * 0.045;
         const geo = new THREE.ExtrudeGeometry(shape, {
           depth,
@@ -575,7 +579,7 @@ export const Hero: React.FC = () => {
             className="absolute rounded-[28px] overflow-hidden border border-white/10 shadow-glass"
             style={
               mobile
-                ? { left: 'clamp(16px, 5%, 22px)', right: 'clamp(16px, 5%, 22px)', top: 'max(8.5%, 84px)', height: '50%' }
+                ? { left: 'clamp(16px, 5%, 22px)', right: 'clamp(16px, 5%, 22px)', top: 'max(8.5%, 84px)', height: '44%' }
                 : { left: '5.5%', right: '5.5%', top: 'max(8.5%, 96px)', bottom: '8.5%' }
             }
           >
@@ -595,24 +599,30 @@ export const Hero: React.FC = () => {
         {/* Copy layer (positioned over the glass plate by the resize handler) */}
         <div
           ref={copyRef}
-          className="absolute flex items-center max-md:items-end will-change-transform pointer-events-none [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
+          className="absolute flex items-center stack:items-end will-change-transform pointer-events-none [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
           style={
             useFallback
               ? mobile
-                ? { left: '4%', right: '4%', top: 'calc(max(8.5%, 84px) + 50% + 12px)', bottom: '3%' }
+                ? { left: '4%', right: '4%', top: 'calc(max(8.5%, 84px) + 44% + 12px)', bottom: '3%' }
                 : { left: '5.5%', right: '5.5%', top: 'max(8.5%, 96px)', bottom: '8.5%' }
               : { transformOrigin: '50% 50%' }
           }
         >
-          <div className="pl-[6%] pr-6 max-w-[min(44rem,92%)] max-md:max-w-full max-md:pl-3 max-md:pr-3 max-md:pb-1 max-md:w-full max-md:rounded-3xl max-md:bg-gradient-to-t max-md:from-[#050507]/90 max-md:via-[#050507]/55 max-md:to-transparent max-md:pt-4">
+          {/* soft dark fade behind the copy so text and face never fight (desktop/tablet) */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 rounded-[28px] stack:hidden"
+            style={{ background: 'linear-gradient(90deg, rgba(8,3,5,0.82) 0%, rgba(8,3,5,0.62) 30%, rgba(8,3,5,0.2) 52%, rgba(8,3,5,0) 62%)' }}
+          />
+          <div className="relative pl-[6%] pr-6 max-w-[min(46rem,58%)] stack:max-w-full stack:pl-3 stack:pr-3 stack:pb-1 stack:w-full stack:rounded-3xl stack:bg-gradient-to-t stack:from-[#050507]/90 stack:via-[#050507]/55 stack:to-transparent stack:pt-4">
             <div data-hero-copy className="flex flex-col gap-2 sm:gap-3.5">
               <span className="text-[#ff2a3b] font-bold uppercase text-[11px] sm:text-xs md:text-sm tracking-[0.25em]">
                 {HERO.eyebrow}
               </span>
-              <h1 className="text-white text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black tracking-tight leading-[0.88] uppercase drop-shadow-md">
+              <h1 className="text-white text-[clamp(2rem,9.6vw,3.75rem)] md:text-[min(5.3vw,7rem)] font-black tracking-tight leading-[0.88] uppercase drop-shadow-[0_4px_24px_rgba(0,0,0,0.55)]">
                 {HERO.headline}
               </h1>
-              <div className="flex items-center gap-2 sm:gap-3 text-white font-extrabold text-sm sm:text-base md:text-lg lg:text-xl uppercase tracking-wider mt-0.5">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 sm:gap-3 text-white font-extrabold text-sm sm:text-base md:text-lg lg:text-xl uppercase tracking-wider mt-0.5">
                 <span>{HERO.roles[0]}</span>
                 <span className="text-[#ff2a3b] font-bold">/</span>
                 <span>{HERO.roles[1]}</span>

@@ -4,6 +4,7 @@ import { Hero } from './components/Hero';
 import { Stats } from './components/Stats';
 import { Projects } from './components/Projects';
 import { About } from './components/About';
+import { Experience } from './components/Experience';
 import { Services } from './components/Services';
 import { Skills } from './components/Skills';
 import { Contact } from './components/Contact';
@@ -56,13 +57,14 @@ export function App() {
   };
 
   return (
-    <div className="relative isolate min-h-screen text-gray-100 flex flex-col font-sans selection:bg-[#a31515] selection:text-white bg-[#07070a]">
+    <div className="relative isolate min-h-screen text-gray-100 flex flex-col font-sans selection:bg-[#a31515] selection:text-white site-bg">
       {/* 3D WebGL Starfield with forward scroll travel and click shockwaves */}
       <ParticleField />
 
       {/* Ambient colour behind the glass: red glow orbs */}
       <div className="ambient" aria-hidden="true">
         <i className="o1" />
+        <i className="o2" />
         <i className="o3" />
       </div>
 
@@ -81,6 +83,7 @@ export function App() {
         <Stats />
         <Projects onSelectProject={handleSelectProject} />
         <About />
+        <Experience />
         <Services />
         <Skills />
         <Contact />

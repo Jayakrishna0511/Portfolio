@@ -56,7 +56,7 @@ export const Services: React.FC = () => {
       </div>
 
       {/* Service cards: glass rows, service on the left, price chip + action on the right */}
-      <ul ref={listRef} className="grid-blur relative list-none p-0 m-0 w-full max-w-4xl grid grid-cols-2 gap-3 md:flex md:flex-col md:gap-4 z-10">
+      <ul ref={listRef} className="grid-blur relative list-none p-0 m-0 w-full max-w-4xl grid grid-cols-1 min-[480px]:grid-cols-2 gap-3 md:flex md:flex-col md:gap-4 z-10">
         {SERVICES_PRICING.map((service, i) => {
           const featured = 'featured' in service && service.featured;
           return (
