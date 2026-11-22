@@ -93,3 +93,7 @@ npm run build     # production files in dist/ (upload to Netlify / Vercel / GitH
 ```
 
 That's it. All text is in `src/data/portfolioData.ts`, all images are in `public/`.
+
+Whenever you modify your portfolio:
+npm run build
+firebase deploy --only hosting
